@@ -20,6 +20,13 @@ jobs:
           java-version: 17
           cache: gradle
       
+      - name: Install Gradle
+        run: sudo apt-get update && sudo apt-get install -y gradle
+      
+      - name: Generate Gradle wrapper files
+        working-directory: android-agent
+        run: gradle wrapper --gradle-version 8.6
+      
       - name: Make gradlew executable
         working-directory: android-agent
         run: chmod +x ./gradlew
