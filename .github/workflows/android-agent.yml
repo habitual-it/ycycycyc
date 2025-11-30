@@ -18,7 +18,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle  # 启用Gradle缓存，加速构建
+          cache: gradle
       
       - name: CI环境诊断
         run: |
@@ -33,29 +33,32 @@ jobs:
           echo -e "\n=== 系统环境变量 ==="
           env | grep -E "JAVA|GRADLE|OS" | sort
       
-      - name: 清理macOS专属Gradle配置（关键修复）
+      - name: 终极清理 - 全文件扫描删除-Xdock参数（关键修复）
         working-directory: android-agent
         run: |
-          # 清理gradle.properties中的无效参数
-          if [ -f gradle.properties ]; then
-            echo "清理前的gradle.properties内容："
-            cat gradle.properties
-            sed -i '/-Xdock:name=Gradle/d' gradle.properties
-            sed -i '/JAVA_OPTS.*Xdock/d' gradle.properties
-            sed -i '/org.gradle.jvmargs.*Xdock/d' gradle.properties
-            echo -e "\n清理后的gradle.properties内容："
-            cat gradle.properties
-          fi
+          echo "=== 开始扫描并清理所有文件中的-Xdock:name=Gradle ==="
           
-          # 清理gradle wrapper配置
-          if [ -f gradle/wrapper/gradle-wrapper.properties ]; then
-            sed -i '/-Xdock:name=Gradle/d' gradle/wrapper/gradle-wrapper.properties
-          fi
+          # 1. 扫描并删除所有类型文件中的目标参数
+          # 覆盖：properties/gradlew/gradle/sh/bat等所有可能文件
+          find . -type f \( \
+            -name "*.properties" -o \
+            -name "gradlew" -o \
+            -name "gradlew.bat" -o \
+            -name "*.gradle" -o \
+            -name "*.gradle.kts" -o \
+            -name "*.sh" -o \
+            -name "*.bat" \
+          \) -exec sed -i '/-Xdock:name=Gradle/d' {} +
           
-          # 清理gradlew脚本中的无效参数
+          # 2. 单独处理gradlew脚本（避免编码问题）
           if [ -f gradlew ]; then
-            sed -i '/-Xdock:name=Gradle/d' gradlew
+            sed -i 's/-Xdock:name=Gradle//g' gradlew
+            chmod +x gradlew
           fi
+          
+          # 3. 验证清理结果
+          echo -e "\n=== 清理后验证（若下方无输出则清理成功）==="
+          grep -r "-Xdock:name=Gradle" . || echo "✅ 所有-Xdock参数已彻底清理"
       
       - name: 确保gradlew可执行
         working-directory: android-agent
@@ -72,7 +75,7 @@ jobs:
             chmod +x ./gradlew
           fi
           
-          # 显式指定兼容的JVM参数（避免macOS配置）
+          # 显式指定安全的JVM参数，彻底避开无效配置
           ./gradlew assembleDebug \
             --stacktrace \
             --info \
@@ -85,7 +88,7 @@ jobs:
         with:
           name: RemoteAgent-debug-apk
           path: android-agent/app/build/outputs/apk/debug/*.apk
-          retention-days: 7  # 保留7天，节省存储空间
+          retention-days: 7
       
       - name: 构建失败时上传日志
         if: failure()
@@ -93,8 +96,8 @@ jobs:
         with:
           name: build-failure-logs
           path: |
+            android-agent/**/*.log
+            android-agent/**/*.properties
+            android-agent/gradlew
             android-agent/app/build/reports/
-            android-agent/build/reports/
-            android-agent/app/build/outputs/
-            android-agent/gradle.properties
           retention-days: 7
