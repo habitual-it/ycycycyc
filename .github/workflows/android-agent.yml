@@ -18,57 +18,76 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle  # 启用Gradle缓存，加速构建
       
-      - name: CI diagnostic
+      - name: CI环境诊断
         run: |
-          echo "== Java =="
+          echo "=== Java版本信息 ==="
           java -version || true
-          echo "== Gradle wrapper =="
+          echo -e "\n=== Gradle版本信息 ==="
           if [ -f android-agent/gradlew ]; then
             android-agent/gradlew -v || true
           else
             gradle -v || true
           fi
-          echo "== Env snapshot =="
-          env | sort
+          echo -e "\n=== 系统环境变量 ==="
+          env | grep -E "JAVA|GRADLE|OS" | sort
       
-      - name: Clean up macOS-specific Gradle config
+      - name: 清理macOS专属Gradle配置（关键修复）
         working-directory: android-agent
         run: |
-          # 检查并移除gradle.properties中的-Xdock:name=Gradle参数
+          # 清理gradle.properties中的无效参数
           if [ -f gradle.properties ]; then
+            echo "清理前的gradle.properties内容："
+            cat gradle.properties
             sed -i '/-Xdock:name=Gradle/d' gradle.properties
-            echo "Removed macOS-specific JVM args from gradle.properties"
+            sed -i '/JAVA_OPTS.*Xdock/d' gradle.properties
+            sed -i '/org.gradle.jvmargs.*Xdock/d' gradle.properties
+            echo -e "\n清理后的gradle.properties内容："
+            cat gradle.properties
           fi
-          # 检查并移除gradle/wrapper/gradle-wrapper.properties中的无效配置
+          
+          # 清理gradle wrapper配置
           if [ -f gradle/wrapper/gradle-wrapper.properties ]; then
             sed -i '/-Xdock:name=Gradle/d' gradle/wrapper/gradle-wrapper.properties
           fi
+          
+          # 清理gradlew脚本中的无效参数
+          if [ -f gradlew ]; then
+            sed -i '/-Xdock:name=Gradle/d' gradlew
+          fi
       
-      - name: Ensure gradlew executable
+      - name: 确保gradlew可执行
         working-directory: android-agent
         run: chmod +x ./gradlew || true
       
-      - name: Generate wrapper (if missing) and build APK
+      - name: 生成Wrapper（若缺失）并构建APK
         working-directory: android-agent
         run: |
-          # 如果 wrapper 不存在，则自动安装 gradle 并生成 wrapper
+          # 若没有gradlew，自动安装Gradle并生成Wrapper
           if [ ! -f ./gradlew ]; then
             sudo apt-get update
             sudo apt-get install -y gradle
             gradle wrapper --gradle-version 8.6
+            chmod +x ./gradlew
           fi
-          chmod +x ./gradlew
-          # 用详细日志构建，并显式设置JVM参数（避免macOS专属配置）
-          ./gradlew assembleDebug --stacktrace --info -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m"
+          
+          # 显式指定兼容的JVM参数（避免macOS配置）
+          ./gradlew assembleDebug \
+            --stacktrace \
+            --info \
+            -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError" \
+            -Dorg.gradle.parallel=true \
+            -Dorg.gradle.daemon=false
       
-      - name: Upload APK
+      - name: 上传Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: RemoteAgent-debug-apk
           path: android-agent/app/build/outputs/apk/debug/*.apk
+          retention-days: 7  # 保留7天，节省存储空间
       
-      - name: Upload build logs on failure
+      - name: 构建失败时上传日志
         if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -77,3 +96,5 @@ jobs:
             android-agent/app/build/reports/
             android-agent/build/reports/
             android-agent/app/build/outputs/
+            android-agent/gradle.properties
+          retention-days: 7
