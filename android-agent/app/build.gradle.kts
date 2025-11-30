@@ -44,9 +44,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
 
-    // WebRTC (Google prebuilt) - 使用正确的依赖坐标
-    // 注意：Google WebRTC预构建库不在公共Maven仓库中，这里使用Jitsi维护的WebRTC库作为替代
-    implementation("org.jitsi.react:jitsi-webrtc:111.0.0")
+    // WebRTC (Google prebuilt) - 暂时注释，需要通过其他方式获取
+    // Google WebRTC预构建库不在公共Maven仓库中，需要从Google官网下载或使用其他方式集成
+    // implementation("org.webrtc:google-webrtc:1.0.+")
 
     // OkHttp WebSocket
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
