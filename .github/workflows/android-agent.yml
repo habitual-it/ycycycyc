@@ -12,11 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
+      
       - name: CI diagnostic
         run: |
           echo "== Java =="
@@ -29,9 +31,24 @@ jobs:
           fi
           echo "== Env snapshot =="
           env | sort
+      
+      - name: Clean up macOS-specific Gradle config
+        working-directory: android-agent
+        run: |
+          # 检查并移除gradle.properties中的-Xdock:name=Gradle参数
+          if [ -f gradle.properties ]; then
+            sed -i '/-Xdock:name=Gradle/d' gradle.properties
+            echo "Removed macOS-specific JVM args from gradle.properties"
+          fi
+          # 检查并移除gradle/wrapper/gradle-wrapper.properties中的无效配置
+          if [ -f gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i '/-Xdock:name=Gradle/d' gradle/wrapper/gradle-wrapper.properties
+          fi
+      
       - name: Ensure gradlew executable
         working-directory: android-agent
         run: chmod +x ./gradlew || true
+      
       - name: Generate wrapper (if missing) and build APK
         working-directory: android-agent
         run: |
@@ -42,10 +59,21 @@ jobs:
             gradle wrapper --gradle-version 8.6
           fi
           chmod +x ./gradlew
-          # 用详细日志构建，以便排查错误
-          ./gradlew assembleDebug --stacktrace --info
+          # 用详细日志构建，并显式设置JVM参数（避免macOS专属配置）
+          ./gradlew assembleDebug --stacktrace --info -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m"
+      
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: RemoteAgent-debug-apk
           path: android-agent/app/build/outputs/apk/debug/*.apk
+      
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-logs
+          path: |
+            android-agent/app/build/reports/
+            android-agent/build/reports/
+            android-agent/app/build/outputs/
