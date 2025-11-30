@@ -17,14 +17,30 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Install Gradle (for wrapper generation)
-        run: sudo apt-get update && sudo apt-get install -y gradle
-      - name: Generate wrapper and build APK
+      - name: CI环境诊断
+        run: |
+          echo "=== Java版本信息 ==="
+          java -version || true
+          echo -e "\n=== Gradle版本信息 ==="
+          if [ -f android-agent/gradlew ]; then
+            android-agent/gradlew -v || true
+          else
+            gradle -v || true
+          fi
+          echo -e "\n=== 系统环境变量 ==="
+          env | grep -E "JAVA|GRADLE|OS" | sort
+      
+      - name: 生成Wrapper并构建APK（带详细日志）
         working-directory: android-agent
         run: |
-          gradle wrapper --gradle-version 8.6
+          # 生成Gradle Wrapper
+          gradle wrapper --gradle-version 8.6 --info || true
+          
+          # 确保gradlew可执行
           chmod +x ./gradlew
-          ./gradlew assembleDebug
+          
+          # 构建APK，添加详细日志和堆栈跟踪
+          ./gradlew assembleDebug --info --stacktrace
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
