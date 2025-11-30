@@ -33,14 +33,17 @@ jobs:
       - name: 生成Wrapper并构建APK（带详细日志）
         working-directory: android-agent
         run: |
-          # 生成Gradle Wrapper
-          gradle wrapper --gradle-version 8.6 --info || true
+          # 生成Gradle Wrapper，确保不使用错误的JVM选项
+          JAVA_OPTS="" gradle wrapper --gradle-version 8.6 --info || true
           
           # 确保gradlew可执行
           chmod +x ./gradlew
           
-          # 构建APK，添加详细日志和堆栈跟踪
-          ./gradlew assembleDebug --info --stacktrace
+          # 修复gradlew脚本，移除或条件化-Xdock:name选项
+          sed -i '/-Xdock:name/d' ./gradlew || true
+          
+          # 构建APK，添加详细日志和堆栈跟踪，确保不使用错误的JVM选项
+          JAVA_OPTS="" ./gradlew assembleDebug --info --stacktrace
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
