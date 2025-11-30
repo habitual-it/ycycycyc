@@ -45,7 +45,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
 
     // WebRTC (Google prebuilt)
-    implementation("org.webrtc:google-webrtc:1.0.32006")
+    implementation("org.webrtc:google-webrtc:1.0.+" )
 
     // OkHttp WebSocket
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
