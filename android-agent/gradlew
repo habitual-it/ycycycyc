@@ -6,16 +6,6 @@
 ##
 ##############################################################################
 
-# 系统类型检测
-cygwin=false
-darwin=false
-nonstop=false
-case "$(uname)" in
-  CYGWIN*) cygwin=true ;;
-  Darwin*) darwin=true ;;
-  NONSTOP*) nonstop=true ;;
-esac
-
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 DEFAULT_JVM_OPTS=""
 
