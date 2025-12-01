@@ -14,6 +14,9 @@ android {
         versionCode = 1
         versionName = "0.1.0"
 
+        buildConfigField("String", "DEFAULT_CODE", "\"123456\"")
+        buildConfigField("String", "DEFAULT_SIGNAL", "\"ws://10.0.2.2:4000/ws\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
