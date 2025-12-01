@@ -55,3 +55,10 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
+
+repositories {
+    maven { url = uri("https://maven.google.com") }
+    maven { url = uri("https://repo1.maven.org/maven2") }
+    google()
+    mavenCentral()
+}
