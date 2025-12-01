@@ -259,7 +259,7 @@ class RemoteAgentService : Service() {
 
     private fun ensureMediaProjection(): Boolean {
         if (mediaProjection != null) return true
-        val data = projectionResultData ?: return false
+        val data: Intent = projectionResultData ?: return false
         val mgr = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjection = mgr.getMediaProjection(projectionResultCode, data)
         return mediaProjection != null
