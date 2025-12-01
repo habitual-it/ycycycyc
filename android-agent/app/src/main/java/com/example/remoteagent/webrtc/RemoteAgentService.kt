@@ -30,6 +30,7 @@ import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
 import org.webrtc.EglBase
 import org.webrtc.IceCandidate
+import org.webrtc.MediaConstraints
 import org.webrtc.MediaStreamTrack
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
@@ -49,6 +50,7 @@ class RemoteAgentService : Service() {
     private var videoCapturer: VideoCapturer? = null
     private var videoSource: VideoSource? = null
     private var videoTrack: VideoTrack? = null
+    private var controlDc: org.webrtc.DataChannel? = null
 
     private var code: String = ""
     private var signalUrl: String = ""
@@ -168,6 +170,7 @@ class RemoteAgentService : Service() {
                 override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
                     log("ICE: $newState")
                 }
+                override fun onIceConnectionReceivingChange(p0: Boolean) {}
                 override fun onAddStream(p0: org.webrtc.MediaStream?) {}
                 override fun onDataChannel(p0: org.webrtc.DataChannel?) {}
                 override fun onRemoveStream(p0: org.webrtc.MediaStream?) {}
@@ -184,7 +187,8 @@ class RemoteAgentService : Service() {
 
         startCaptureIfPossible()
 
-        pc?.createDataChannel("control", org.webrtc.DataChannel.Init())?.registerObserver(ControlObserver())
+        controlDc = pc?.createDataChannel("control", org.webrtc.DataChannel.Init())
+        controlDc?.registerObserver(ControlObserver())
 
         pc?.createOffer(SimpleSdpObserver { sdp ->
             pc?.setLocalDescription(SimpleSdpObserver(), sdp)
@@ -243,7 +247,7 @@ class RemoteAgentService : Service() {
     }
 
     private fun createScreenCapturer(): VideoCapturer {
-        val data = projectionResultData
+        val data = projectionResultData ?: return DummyCapturer(::log)
         val callback = object : MediaProjection.Callback() {
             override fun onStop() {
                 log("录屏停止")
@@ -259,6 +263,21 @@ class RemoteAgentService : Service() {
         val mgr = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjection = mgr.getMediaProjection(projectionResultCode, data)
         return mediaProjection != null
+    }
+
+    private class DummyCapturer(val logger: (String) -> Unit) : VideoCapturer {
+        override fun initialize(
+            surfaceTextureHelper: SurfaceTextureHelper?,
+            context: Context?,
+            capturerObserver: org.webrtc.CapturerObserver?
+        ) {
+            logger("缺少录屏权限")
+        }
+        override fun startCapture(width: Int, height: Int, framerate: Int) {}
+        override fun stopCapture() {}
+        override fun changeCaptureFormat(width: Int, height: Int, framerate: Int) {}
+        override fun dispose() {}
+        override fun isScreencast(): Boolean = true
     }
 
     private fun log(msg: String) {
@@ -324,7 +343,7 @@ class RemoteAgentService : Service() {
     private inner class ControlObserver : org.webrtc.DataChannel.Observer {
         override fun onBufferedAmountChange(p0: Long) {}
         override fun onStateChange() {
-            log("DataChannel state=${pc?.dataChannels?.firstOrNull()?.state()}")
+            log("DataChannel state=${controlDc?.state()}")
         }
 
         override fun onMessage(buffer: org.webrtc.DataChannel.Buffer?) {
