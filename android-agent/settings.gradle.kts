@@ -1,14 +1,18 @@
 pluginManagement {
     repositories {
+        maven { url = uri("https://dl.google.com/dl/android/maven2/") }
+        maven { url = uri("https://maven.google.com") }
         google()
-        mavenCentral()
         gradlePluginPortal()
+        mavenCentral()
     }
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
+        maven { url = uri("https://dl.google.com/dl/android/maven2/") }
+        maven { url = uri("https://maven.google.com") }
         google()
         mavenCentral()
     }

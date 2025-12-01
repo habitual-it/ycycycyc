@@ -17,6 +17,14 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          components: |
+            platform-tools
+            build-tools;34.0.0
+            platforms;android-34
+            cmdline-tools;latest
       - name: Install Gradle (for wrapper generation)
         run: sudo apt-get update && sudo apt-get install -y gradle
       - name: Generate wrapper and build APK
