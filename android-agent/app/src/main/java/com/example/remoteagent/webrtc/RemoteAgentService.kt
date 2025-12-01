@@ -329,7 +329,7 @@ class RemoteAgentService : Service() {
                 mediaProjectionManager =
                     context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             }
-            val intent = mediaProjectionManager?.createScreenCaptureIntent()
+            val intent = mediaProjectionManager!!.createScreenCaptureIntent()
             launcher.launch(intent)
         }
 
