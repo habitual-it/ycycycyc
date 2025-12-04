@@ -304,6 +304,45 @@ button:active {
   margin: 80px auto;
 }
 
+.vote-card {
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.vote-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.vote-card-item {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.vote-rank {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.vote-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.vote-team,
+.vote-count {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .video-box {
   border-radius: 14px;
   background: radial-gradient(circle at 20% 20%, rgba(108, 243, 197, 0.08), rgba(255, 255, 255, 0.02));
