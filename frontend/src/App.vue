@@ -1,27 +1,5 @@
 <template>
   <div class="app-shell">
-    <!-- 简易舞蹈投票页 -->
-    <div v-if="!showOld" class="card vote-card">
-      <div class="header" style="margin-bottom: 8px">
-        <div>
-          <div class="badge">舞蹈投票 · Demo</div>
-          <h1 class="title">人气投票</h1>
-          <p class="subtitle">为你喜欢的选手投上一票，实时累加。</p>
-        </div>
-        <button class="secondary" @click="showOld = true">返回后台</button>
-      </div>
-      <div class="vote-grid">
-        <div v-for="item in candidates" :key="item.id" class="vote-card-item">
-          <div class="vote-rank">#{{ item.rank }}</div>
-          <div class="vote-name">{{ item.name }}</div>
-          <div class="vote-team">{{ item.team }}</div>
-          <div class="vote-count">票数：{{ item.votes }}</div>
-          <button @click="voteFor(item.id)">投票</button>
-        </div>
-      </div>
-    </div>
-
-    <div v-show="showOld">
     <div v-if="!isAuthed" class="card auth-card">
       <h3>管理员登录</h3>
       <p class="muted">默认账号密码在 <code>backend/.env</code> 中，可自行修改。</p>
@@ -369,13 +347,6 @@ import { api, setToken, getToken } from './api/client';
 const devices = ref([]);
 const scripts = ref([]);
 const tasks = ref([]);
-const showOld = ref(false);
-const candidates = reactive([
-  { id: 'a', name: '选手 A', team: '火花舞团', votes: 1280, rank: 1 },
-  { id: 'b', name: '选手 B', team: '霓虹舞社', votes: 1120, rank: 2 },
-  { id: 'c', name: '选手 C', team: '节奏联盟', votes: 980, rank: 3 },
-  { id: 'd', name: '选手 D', team: '街舞小队', votes: 860, rank: 4 }
-]);
 
 const creating = reactive({
   device: false,
@@ -628,13 +599,6 @@ const retryTask = async (taskId) => {
     if (handleUnauthorized(err)) return;
     setToast(`重试失败: ${err.message}`, 'error');
   }
-};
-
-const voteFor = (id) => {
-  const target = candidates.find((c) => c.id === id);
-  if (!target) return;
-  target.votes += 1;
-  setToast(`已为 ${target.name} 投票`);
 };
 
 const handleLogin = async () => {

@@ -26,7 +26,7 @@
 
         <service
             android:name=".webrtc.RemoteAgentService"
-            android:foregroundServiceType="mediaProjection"
+            android:foregroundServiceType="mediaProjection|connectedDevice"
             android:exported="false" />
 
         <service

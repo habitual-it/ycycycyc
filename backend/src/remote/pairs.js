@@ -12,25 +12,17 @@ function generateCode() {
 }
 
 function createPair(deviceId = null) {
-  const staticCode = (config.signaling.staticCode || '').trim();
-  const code = staticCode || generateCode();
+  const code = generateCode();
   const now = Date.now();
   const expiresAt = now + config.signaling.pairTtlMs;
-  if (!pairs.has(code)) {
-    pairs.set(code, { deviceId, createdAt: now, expiresAt });
-  } else {
-    const entry = pairs.get(code);
-    entry.expiresAt = expiresAt;
-    if (deviceId && !entry.deviceId) entry.deviceId = deviceId;
-    pairs.set(code, entry);
-  }
-  return { code, deviceId: pairs.get(code).deviceId, expiresAt };
+  pairs.set(code, { deviceId, createdAt: now, expiresAt });
+  return { code, deviceId, expiresAt };
 }
 
 function verifyPair(code) {
   const entry = pairs.get(code);
   if (!entry) return null;
-  if (Date.now() > entry.expiresAt && code !== (config.signaling.staticCode || '').trim()) {
+  if (Date.now() > entry.expiresAt) {
     pairs.delete(code);
     return null;
   }

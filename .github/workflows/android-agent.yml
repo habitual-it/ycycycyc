@@ -17,19 +17,14 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Install Android SDK cmdline tools
-        uses: android-actions/setup-android@v2
-      - name: Generate gradle wrapper (8.6)
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 8.6
-          arguments: wrapper
-          build-root-directory: android-agent
-      - name: Make gradlew executable
-        run: chmod +x android-agent/gradlew
-      - name: Build APK
+      - name: Install Gradle (for wrapper generation)
+        run: sudo apt-get update && sudo apt-get install -y gradle
+      - name: Generate wrapper and build APK
         working-directory: android-agent
-        run: ./gradlew assembleDebug
+        run: |
+          gradle wrapper --gradle-version 8.6
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
