@@ -23,6 +23,7 @@ const config = {
   signaling: {
     wsPath: process.env.SIGNALING_PATH || '/ws',
     pairTtlMs: parseNumber(process.env.SIGNALING_PAIR_TTL_MS, 30 * 60 * 1000), // 30min
+    staticCode: process.env.SIGNALING_STATIC_CODE || '',
     stunServers: (process.env.STUN_SERVERS || 'stun:stun.l.google.com:19302')
       .split(',')
       .map((s) => s.trim())

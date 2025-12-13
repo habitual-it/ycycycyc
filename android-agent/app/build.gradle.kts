@@ -14,7 +14,14 @@ android {
         versionCode = 1
         versionName = "0.1.0"
 
+        buildConfigField("String", "DEFAULT_CODE", "\"123456\"")
+        buildConfigField("String", "DEFAULT_SIGNAL", "\"ws://10.0.2.2:4000/ws\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -44,8 +51,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
 
-    // WebRTC (Google prebuilt)
-    implementation("org.webrtc:google-webrtc:1.0.+" )
+    // WebRTC (Maven Central published)
+    implementation("io.github.webrtc-sdk:android:114.5735.08")
 
     // OkHttp WebSocket
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

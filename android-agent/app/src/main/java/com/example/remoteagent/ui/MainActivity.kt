@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.example.remoteagent.BuildConfig
 import com.example.remoteagent.R
 import com.example.remoteagent.webrtc.RemoteAgentService
 
@@ -15,6 +16,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var inputCode: EditText
     private lateinit var inputSignal: EditText
     private lateinit var logView: TextView
+    private var autoStarted = false
 
     private val mediaProjectionPermission = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -41,6 +43,19 @@ class MainActivity : AppCompatActivity() {
 
         RemoteAgentService.logs.observe(this) { line ->
             appendLog(line)
+        }
+
+        // 自动填充默认配对码/信令地址
+        if (BuildConfig.DEFAULT_CODE.isNotBlank()) {
+            inputCode.setText(BuildConfig.DEFAULT_CODE)
+        }
+        if (BuildConfig.DEFAULT_SIGNAL.isNotBlank()) {
+            inputSignal.setText(BuildConfig.DEFAULT_SIGNAL)
+        }
+        // 自动启动
+        if (BuildConfig.DEFAULT_CODE.isNotBlank() && BuildConfig.DEFAULT_SIGNAL.isNotBlank()) {
+            autoStarted = true
+            startAgent()
         }
     }
 
