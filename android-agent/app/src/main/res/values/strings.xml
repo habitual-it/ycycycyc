@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">RemoteAgent</string>
+    <string name="hint_code">配对码</string>
+    <string name="hint_signal">信令地址</string>
+    <string name="label_start">启动</string>
+    <string name="label_stop">停止</string>
+    <string name="default_signal">ws://10.0.2.2:4000/ws</string>
+</resources>
